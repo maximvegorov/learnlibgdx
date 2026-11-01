@@ -5,8 +5,11 @@
 - [Текстуры и SpriteBatch](#текстуры-и-spritebatch)
 - [Координаты и камера](#координаты-и-камера)
 - [Viewport и изменение размера окна](#viewport-и-изменение-размера-окна)
+- [Отрисовка 2D-фигур](#отрисовка-2d-фигур)
+- [Полный игровой экран](#полный-игровой-экран)
+  - [Проверка и самостоятельная работа](#проверка-и-самостоятельная-работа)
 
-Во второй главе мы разделили приложение на меню и игровой экран. Теперь нарисуем на игровом экране изображения и научимся сохранять их пропорции при изменении размеров окна.
+Во второй главе мы разделили приложение на меню и игровой экран. Теперь нарисуем на игровом экране изображения и геометрические фигуры и научимся сохранять их пропорции при изменении размеров окна.
 
 Продолжим работу с проектом `chapter-01/first-game`. В конце главы заменим `PlayScreen.java` в пакете `ru.learnlibgdx.firstgame`. Классы `FirstGame` и `MenuScreen` возьмём из основного примера второй главы. Enter по-прежнему открывает игровой экран, пробел переключает паузу, Escape возвращает в меню.
 
@@ -191,7 +194,68 @@ viewport.update(width, height, true);
 
 На HiDPI-мониторах логические размеры окна могут отличаться от физических размеров буфера. Используйте размеры, пришедшие в `resize()`, и штатный `Viewport`, не домножая их вручную на масштаб монитора. Особенности LWJGL3 описаны в [руководстве по настройке графики](https://libgdx.com/wiki/graphics/querying-and-configuring-graphics).
 
-### Полный игровой экран
+## Отрисовка 2D-фигур
+
+### ShapeRenderer: контуры и заливка
+
+Для простых фигур без текстур используем `ShapeRenderer` из пакета `com.badlogic.gdx.graphics.glutils`. Он пригодится для прототипа уровня, полосы здоровья или отладочных границ объектов. В отличие от рисования в `Pixmap`, результат сразу попадает в кадр: создавать промежуточную текстуру не требуется. Примеры использования есть в [руководстве по отрисовке фигур](https://libgdx.com/wiki/graphics/opengl-utils/rendering-shapes).
+
+Как и `SpriteBatch`, объект создаём один раз в конструкторе экрана, используем в каждом кадре и освобождаем в `dispose()`:
+
+```java
+// Поле PlayScreen:
+private final ShapeRenderer shapes;
+
+// В конструкторе:
+shapes = new ShapeRenderer();
+
+// В dispose():
+shapes.dispose();
+```
+
+Это фрагменты для разных мест класса. Полный вариант приведён ниже. Для контура выбираем `ShapeRenderer.ShapeType.Line`, для заливки — `ShapeRenderer.ShapeType.Filled`. Цвет задаём через `setColor(r, g, b, a)`; здесь используем непрозрачные цвета с `a = 1f`.
+
+После применения viewport передаём фигурам ту же матрицу камеры, что и текстурам:
+
+```java
+viewport.apply();
+shapes.setProjectionMatrix(camera.combined);
+
+shapes.begin(ShapeRenderer.ShapeType.Filled);
+shapes.setColor(0.2f, 0.8f, 0.45f, 1f);
+shapes.rect(100f, 80f, 120f, 60f);
+shapes.end();
+
+shapes.begin(ShapeRenderer.ShapeType.Line);
+shapes.setColor(1f, 1f, 1f, 1f);
+shapes.rect(100f, 80f, 120f, 60f);
+shapes.end();
+```
+
+Получится зелёный прямоугольник с белым контуром. При смене режима завершаем текущую группу через `end()`, затем начинаем следующую. Несколько фигур одного режима можно рисовать внутри одной пары `begin()` / `end()`.
+
+### Линии, прямоугольники, круги и треугольники
+
+| Вызов | Значение аргументов |
+| --- | --- |
+| `line(x1, y1, x2, y2)` | Координаты двух концов отрезка; в примере используем режим `Line` |
+| `rect(x, y, width, height)` | Левый нижний угол, ширина и высота прямоугольника |
+| `circle(x, y, radius, segments)` | Центр, радиус и число сегментов окружности |
+| `ellipse(x, y, width, height, segments)` | Левый нижний угол и размеры ограничивающего прямоугольника, число сегментов |
+| `triangle(x1, y1, x2, y2, x3, y3)` | Координаты трёх вершин треугольника |
+| `rectLine(x1, y1, x2, y2, width)` | Отрезок в виде прямоугольника заданной толщины; для сплошной полосы выбираем `Filled` |
+
+Прямоугольник, круг, эллипс и треугольник поддерживают и контур, и заливку. У `circle()` координаты задают **центр**, а у `rect()` и `ellipse()` — **угол**. Толщина `rectLine()` измеряется в мировых единицах, поэтому масштабируется вместе со сценой.
+
+Круг и эллипс приближаются сегментами. В полном примере используем 48 сегментов; попробуйте заменить их на 8 и сравнить границы. Большее значение делает границу менее угловатой, но увеличивает количество геометрии. Перегрузки без `segments` подбирают число сегментов автоматически. Сигнатуры методов и поддерживаемые режимы приведены в [исходном коде ShapeRenderer](https://github.com/libgdx/libgdx/blob/master/gdx/src/com/badlogic/gdx/graphics/glutils/ShapeRenderer.java).
+
+### Совместная отрисовка с SpriteBatch
+
+Перед `shapes.begin()` обязательно завершайте отрисовку текстур через `batch.end()`. Перед возвращением к текстурам вызывайте `shapes.end()`. Оба объекта используют собственные буферы геометрии; частое чередование увеличивает число отправок данных на GPU. Это ограничение описано в [руководстве по отрисовке фигур](https://libgdx.com/wiki/graphics/opengl-utils/rendering-shapes).
+
+В нашем экране порядок будет таким: фон и маркеры через `batch`, затем залитые фигуры, затем линии и контуры через `shapes`. Поэтому рамка вокруг движущегося маркера окажется поверх его изображения. Общая `camera.combined` позволит рамке совпадать с маркером при изменении окна.
+
+## Полный игровой экран
 
 Замените содержимое `core/src/main/java/ru/learnlibgdx/firstgame/PlayScreen.java` следующим кодом. Если генератор использовал каталог `src`, сохраните файл в соответствующем пакете этого каталога.
 
@@ -205,6 +269,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
@@ -217,6 +282,7 @@ public class PlayScreen extends ScreenAdapter {
     private final OrthographicCamera camera;
     private final FitViewport viewport;
     private final SpriteBatch batch;
+    private final ShapeRenderer shapes;
     private final Texture markerTexture;
     private final Texture whiteTexture;
 
@@ -228,6 +294,7 @@ public class PlayScreen extends ScreenAdapter {
         camera = new OrthographicCamera();
         viewport = new FitViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
         batch = new SpriteBatch();
+        shapes = new ShapeRenderer();
         markerTexture = createMarkerTexture();
         markerTexture.setFilter(Texture.TextureFilter.Nearest,
                                 Texture.TextureFilter.Nearest);
@@ -309,6 +376,33 @@ public class PlayScreen extends ScreenAdapter {
                    WORLD_HEIGHT - MARKER_SIZE, MARKER_SIZE, MARKER_SIZE);
         batch.draw(markerTexture, x, y, MARKER_SIZE, MARKER_SIZE);
         batch.end();
+
+        drawShapes(x, y);
+    }
+
+    private void drawShapes(float markerX, float markerY) {
+        shapes.setProjectionMatrix(camera.combined);
+
+        shapes.begin(ShapeRenderer.ShapeType.Filled);
+        shapes.setColor(0.2f, 0.8f, 0.45f, 1f);
+        shapes.rect(100f, 80f, 120f, 60f);
+        shapes.setColor(1f, 0.55f, 0.2f, 1f);
+        shapes.circle(320f, 110f, 30f, 48);
+        shapes.setColor(0.7f, 0.4f, 1f, 1f);
+        shapes.triangle(410f, 80f, 490f, 80f, 450f, 145f);
+        shapes.setColor(0.2f, 0.75f, 0.95f, 1f);
+        shapes.ellipse(560f, 85f, 120f, 50f, 48);
+        shapes.setColor(1f, 0.8f, 0.2f, 1f);
+        shapes.rectLine(100f, 330f, 220f, 360f, 8f);
+        shapes.end();
+
+        shapes.begin(ShapeRenderer.ShapeType.Line);
+        shapes.setColor(1f, 1f, 1f, 1f);
+        shapes.line(100f, 300f, 700f, 300f);
+        shapes.rect(100f, 80f, 120f, 60f);
+        shapes.circle(320f, 110f, 30f, 48);
+        shapes.rect(markerX, markerY, MARKER_SIZE, MARKER_SIZE);
+        shapes.end();
     }
 
     @Override
@@ -319,6 +413,7 @@ public class PlayScreen extends ScreenAdapter {
     @Override
     public void dispose() {
         batch.dispose();
+        shapes.dispose();
         markerTexture.dispose();
         whiteTexture.dispose();
     }
@@ -327,20 +422,22 @@ public class PlayScreen extends ScreenAdapter {
 
 Четыре неподвижных квадрата отмечают углы игрового мира. Пятый движется по горизонтали: его левый край колеблется от 168 до 568 единиц. Пробел останавливает накопление времени, поэтому движущийся квадрат замирает. Ограничение дельты работает так же, как во второй главе.
 
+Под движущимся квадратом расположены зелёный прямоугольник, оранжевый круг, фиолетовый треугольник и голубой эллипс. Над ним — белый отрезок и жёлтая наклонная полоса. Белая рамка следует за квадратом: `drawShapes()` получает те же координаты, что и `batch.draw()`.
+
 Белая текстура 1 × 1 служит заливкой: растягиваем её на всю игровую область и тонируем в тёмно-синий цвет. Затем возвращаем цвет `batch` к белому и рисуем маркеры. В этом примере фон и маркеры используют разные текстуры, поэтому одна пара `begin()` / `end()` не означает одну отправку геометрии на GPU.
 
 `ScreenUtils.clear()` очищает окно чёрным цветом. При обычном состоянии OpenGL без включённого scissor-теста очистка затрагивает весь цветовой буфер, включая поля `FitViewport`. Отрисовка фона через `batch`, напротив, занимает только игровую область. Поэтому поля будут чёрными, а игровая область — синей. Реализацию очистки можно посмотреть в [ScreenUtils](https://github.com/libgdx/libgdx/blob/master/gdx/src/com/badlogic/gdx/utils/ScreenUtils.java).
 
 Конструктор `PlayScreen` здесь вызывается внутри `FirstGame.create()`, когда графический контекст уже доступен. При переходе `Game.setScreen()` вызывает `show()`, а затем `resize()` с текущими размерами, поэтому viewport настроен до первого кадра экрана. При повторном входе из меню он также получает актуальные размеры.
 
-Ресурсы сохраняются при `hide()`: экран из второй главы используется повторно. При завершении `FirstGame.dispose()` вызывает `playScreen.dispose()`, и текстуры с `SpriteBatch` освобождаются. У камеры и viewport в этом примере нет ресурсов, требующих `dispose()`.
+Ресурсы сохраняются при `hide()`: экран из второй главы используется повторно. При завершении `FirstGame.dispose()` вызывает `playScreen.dispose()`, и текстуры, `SpriteBatch` и `ShapeRenderer` освобождаются. У камеры и viewport в этом примере нет ресурсов, требующих `dispose()`.
 
 ### Проверка и самостоятельная работа
 
 Из каталога `chapter-01/first-game` выполните `./gradlew build`, затем `./gradlew lwjgl3:run`. В Windows используйте `.\gradlew.bat build` и `.\gradlew.bat lwjgl3:run`.
 
-1. Нажмите Enter. Должны появиться синий фон, четыре квадрата по углам и один движущийся квадрат в середине.
-2. Изменяйте ширину и высоту окна. Все угловые квадраты должны оставаться видимыми и сохранять форму. При несовпадении пропорций появятся чёрные поля.
+1. Нажмите Enter. Должны появиться синий фон, четыре квадрата по углам, движущийся квадрат с белой рамкой, цветные фигуры и линии.
+2. Изменяйте ширину и высоту окна. Все угловые квадраты должны оставаться видимыми, круг — круглым, а рамка — совпадать с движущимся квадратом. При несовпадении пропорций появятся чёрные поля.
 3. Нажмите пробел и измените размер окна. Положение центрального квадрата в мировых координатах сохранится, хотя его экранный размер может измениться.
 4. Вернитесь в меню, измените размер окна и снова откройте игровой экран. Проверьте, что область отрисовки соответствует новому окну.
 5. Сверните и восстановите игру. Как во второй главе, для продолжения после системной паузы нажмите пробел.
@@ -349,6 +446,8 @@ public class PlayScreen extends ScreenAdapter {
 
 Для сравнения стратегий замените тип поля `FitViewport`, импорт и вызов конструктора на `StretchViewport`. Сделайте окно узким: квадраты вытянутся. Повторите с `FillViewport`: форма сохранится, но часть сцены окажется за границами окна. После эксперимента верните `FitViewport`.
 
+Добавьте белые контуры треугольника и эллипса в группу `ShapeType.Line`, повторив координаты залитых фигур. Затем измените толщину жёлтой полосы с `8f` на `16f`. Для эксперимента с сегментами задайте кругу значение `8` и в заливке, и в контуре, чтобы они совпадали.
+
 Если результат отличается от ожидаемого, проверьте следующие места:
 
 | Симптом | Что проверить |
@@ -356,6 +455,9 @@ public class PlayScreen extends ScreenAdapter {
 | PNG не найден | Каталог `assets`, относительный путь и регистр имени файла |
 | `SpriteBatch.begin must be called before draw` | Все ли вызовы `batch.draw()` стоят между `begin()` и `end()` |
 | Маркеры неожиданно затемнены | Возвращается ли цвет `batch` к белому после рисования фона |
+| Фигуры смещены относительно текстур | Передаётся ли одна и та же `camera.combined` в `batch` и `shapes` после применения viewport |
+| Фигуры перекрываются фоном или рисуются в неожиданном порядке | Завершён ли `batch.end()` до `shapes.begin()` и рисуются ли фигуры после фона |
+| Ошибка при начале новой группы фигур | Вызван ли `shapes.end()` перед следующим `shapes.begin(...)` |
 | Картинка искажена после изменения окна | Выбран ли `FitViewport` и вызывается ли `viewport.update()` в `resize()` |
 | Объекты видны только частично или не там, где ожидалось | Центрирование камеры, её `zoom` и передача `camera.combined` в `batch` |
 | После нескольких переходов экран перестаёт работать | Не освобождаются ли повторно используемые текстуры в `hide()` |
