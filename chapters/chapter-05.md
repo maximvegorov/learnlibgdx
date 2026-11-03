@@ -8,7 +8,7 @@
 
 В четвёртой главе мы вынесли изображения в атлас и организовали загрузку ресурсов. Теперь добавим в меню название игры и подсказки на русском языке. Заодно разберёмся, почему один и тот же шрифт может выглядеть чётко в маленьком окне и размыто после увеличения.
 
-Продолжим проект `chapter-01/first-game`: подключим расширение FreeType, добавим файл шрифта и класс `FontGenerator`, заменим `MenuScreen.java`. Оба Java-класса относятся к пакету `ru.learnlibgdx.firstgame` в модуле `core`. `FirstGame`, `LoadingScreen` и `PlayScreen` остаются в варианте из главы 4. Enter открывает игру, пробел переключает паузу, Escape возвращает в меню.
+Продолжим проект `my-game`: подключим расширение FreeType, добавим файл шрифта и класс `FontGenerator`, заменим `MenuScreen.java`. Оба Java-класса относятся к пакету `ru.learnlibgdx.mygame` в модуле `core`. `MyGame`, `LoadingScreen` и `PlayScreen` остаются в варианте из главы 4. Enter открывает игру, пробел переключает паузу, Escape возвращает в меню.
 
 ## TrueType и BitmapFont
 
@@ -93,7 +93,7 @@ assets/
 Создайте `FontGenerator.java`:
 
 ```java
-package ru.learnlibgdx.firstgame;
+package ru.learnlibgdx.mygame;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
@@ -175,7 +175,7 @@ public final class FontGenerator implements Disposable {
 Замените `MenuScreen.java` следующим кодом:
 
 ```java
-package ru.learnlibgdx.firstgame;
+package ru.learnlibgdx.mygame;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -192,7 +192,7 @@ public class MenuScreen extends ScreenAdapter {
     private static final float UI_WIDTH = 800f;
     private static final float UI_HEIGHT = 450f;
 
-    private final FirstGame game;
+    private final MyGame game;
     private final OrthographicCamera camera;
     private final FitViewport viewport;
     private final SpriteBatch batch;
@@ -201,7 +201,7 @@ public class MenuScreen extends ScreenAdapter {
     private final BitmapFont textFont;
     private final GlyphLayout layout = new GlyphLayout();
 
-    public MenuScreen(FirstGame game) {
+    public MenuScreen(MyGame game) {
         this.game = game;
         camera = new OrthographicCamera();
         viewport = new FitViewport(UI_WIDTH, UI_HEIGHT, camera);
@@ -226,7 +226,7 @@ public class MenuScreen extends ScreenAdapter {
 
         batch.begin();
         titleFont.setColor(Color.WHITE);
-        drawCentered(titleFont, "Первая игра", 330f);
+        drawCentered(titleFont, "My Game", 330f);
         textFont.setColor(0.75f, 0.9f, 1f, 1f);
         drawCentered(textFont, "Нажмите Enter, чтобы играть", 245f);
         textFont.setColor(Color.WHITE);
@@ -258,7 +258,7 @@ public class MenuScreen extends ScreenAdapter {
 
 В этой версии шрифты создаются синхронно в конструкторе меню после загрузки атласа. Прогресс `AssetManager` из главы 4 их не учитывает. Два небольших набора удобны для учебного примера; при большом числе шрифтов подготовку стоит включить в загрузку ресурсов. Для этого существуют `FreeTypeFontGeneratorLoader` и `FreetypeFontLoader`, описанные в [разделе загрузки TTF через AssetManager](https://libgdx.com/wiki/managing-your-assets#loading-a-ttf-using-the-assethandler). Не регистрируйте один и тот же объект одновременно у менеджера и у нашего владельца шрифтов.
 
-Меню хранится в `FirstGame` между переходами. Поэтому в `hide()` ничего не освобождаем. При закрытии приложения `FirstGame.dispose()` из главы 4 вызовет `menuScreen.dispose()`, а тот освободит пакет рисования, созданные шрифты и генератор.
+Меню хранится в `MyGame` между переходами. Поэтому в `hide()` ничего не освобождаем. При закрытии приложения `MyGame.dispose()` из главы 4 вызовет `menuScreen.dispose()`, а тот освободит пакет рисования, созданные шрифты и генератор.
 
 ## Размеры и качество текста
 
@@ -315,9 +315,9 @@ public class MenuScreen extends ScreenAdapter {
 
 ### Проверка и самостоятельная работа
 
-Из каталога `first-game` запустите `./gradlew lwjgl3:run` или `.\gradlew.bat lwjgl3:run` в Windows PowerShell.
+Из каталога `my-game` запустите `./gradlew lwjgl3:run` или `.\gradlew.bat lwjgl3:run` в Windows PowerShell.
 
-1. После загрузки должны появиться заголовок «Первая игра» и две подсказки. Проверьте русские буквы и длинное тире.
+1. После загрузки должны появиться заголовок «My Game» и две подсказки. Проверьте русские буквы и длинное тире.
 2. Нажмите Enter, затем Escape. Меню должно вернуться с тем же текстом; повторная генерация шрифтов при переходе не нужна.
 3. Измените размер окна. Надписи должны оставаться по центру области интерфейса. Сравните чёткость в окне 800 × 450 и 1600 × 900 с учётом масштаба дисплея.
 4. Временно замените заголовок на «Ёжик, йод, щука — 0123456789». Проверьте, что у исходного TTF есть все нужные глифы.
@@ -336,4 +336,4 @@ public class MenuScreen extends ScreenAdapter {
 | После возврата в меню текст пропадает | Не освобождаются ли шрифты в `hide()` или отдельно от их владельца |
 | Память растёт при изменении размеров | Не создаётся ли бесконечное число вариантов в кэше |
 
-В качестве упражнения добавьте надпись «Пауза» в `PlayScreen` из главы 4. Заранее определите владельца шрифта: если экран создаёт собственный `FontGenerator`, он же должен его освобождать; если шрифт общий для меню и игры, перенесите владельца в `FirstGame` и освобождайте после обоих экранов.
+В качестве упражнения добавьте надпись «Пауза» в `PlayScreen` из главы 4. Заранее определите владельца шрифта: если экран создаёт собственный `FontGenerator`, он же должен его освобождать; если шрифт общий для меню и игры, перенесите владельца в `MyGame` и освобождайте после обоих экранов.

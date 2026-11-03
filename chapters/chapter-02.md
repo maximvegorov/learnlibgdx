@@ -8,13 +8,13 @@
 
 В первой главе мы открыли окно и закрасили его одним цветом. Теперь разберёмся, кто вызывает игровой код, как учитывать прошедшее время и где хранить код меню и самой игры.
 
-Продолжим работу с проектом `chapter-01/first-game`. Все изменения этой главы относятся к модулю `core`; настольный запуск по-прежнему создаёт `new FirstGame()`. В результате получим два экрана: синее меню и игровой экран с плавно меняющимся зелёным фоном. Для примера не понадобятся изображения и другие файлы ресурсов.
+Продолжим работу с проектом `my-game`. Все изменения этой главы относятся к модулю `core`; настольный запуск по-прежнему создаёт `new MyGame()`. В результате получим два экрана: синее меню и игровой экран с плавно меняющимся зелёным фоном. Для примера не понадобятся изображения и другие файлы ресурсов.
 
 ## Жизненный цикл приложения
 
 ### Кто управляет приложением
 
-В `Lwjgl3Launcher` мы передали объект `FirstGame` бэкенду. Дальше LibGDX вызывает методы этого объекта при запуске, подготовке кадров, изменении размера окна и завершении приложения. Набор таких событий называют **жизненным циклом**.
+В `Lwjgl3Launcher` мы передали объект `MyGame` бэкенду. Дальше LibGDX вызывает методы этого объекта при запуске, подготовке кадров, изменении размера окна и завершении приложения. Набор таких событий называют **жизненным циклом**.
 
 Его описывает интерфейс `ApplicationListener`. Класс `ApplicationAdapter`, использованный в первой главе, предоставляет пустые реализации всех его методов. Поэтому можно переопределять только нужные.
 
@@ -39,16 +39,16 @@ create() → resize(...) → render() → render() → ... → pause() → dispo
 
 ### Наблюдаем вызовы
 
-Временно замените содержимое `FirstGame.java` следующим кодом. Путь к файлу в проекте из первой главы: `core/src/main/java/ru/learnlibgdx/firstgame/FirstGame.java`.
+Временно замените содержимое `MyGame.java` следующим кодом. Путь к файлу в проекте из первой главы: `core/src/main/java/ru/learnlibgdx/mygame/MyGame.java`.
 
 ```java
-package ru.learnlibgdx.firstgame;
+package ru.learnlibgdx.mygame;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 
-public class FirstGame extends ApplicationAdapter {
+public class MyGame extends ApplicationAdapter {
     private boolean firstFrame = true;
 
     @Override
@@ -183,14 +183,14 @@ update(step);
 
 ### Главный класс игры
 
-Теперь замените диагностический `FirstGame` этим окончательным вариантом. В том же пакете создайте ещё два файла, `MenuScreen.java` и `PlayScreen.java`, приведённые ниже.
+Теперь замените диагностический `MyGame` этим окончательным вариантом. В том же пакете создайте ещё два файла, `MenuScreen.java` и `PlayScreen.java`, приведённые ниже.
 
 ```java
-package ru.learnlibgdx.firstgame;
+package ru.learnlibgdx.mygame;
 
 import com.badlogic.gdx.Game;
 
-public class FirstGame extends Game {
+public class MyGame extends Game {
     private MenuScreen menuScreen;
     private PlayScreen playScreen;
 
@@ -220,14 +220,14 @@ public class FirstGame extends Game {
 
 Оба экрана создаются один раз и хранятся в игре. Поэтому возврат к игровому экрану сохранит его поля. В этом примере вход из меню означает продолжение, а не начало новой партии.
 
-Метод `render()` в `FirstGame` не переопределяем: унаследованный вариант передаёт кадр текущему экрану. Если позже понадобится собственный `render()`, сохраните в нём вызов `super.render()`, иначе этот механизм перестанет работать.
+Метод `render()` в `MyGame` не переопределяем: унаследованный вариант передаёт кадр текущему экрану. Если позже понадобится собственный `render()`, сохраните в нём вызов `super.render()`, иначе этот механизм перестанет работать.
 
 ### Экран меню
 
 Содержимое `MenuScreen.java`:
 
 ```java
-package ru.learnlibgdx.firstgame;
+package ru.learnlibgdx.mygame;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -235,9 +235,9 @@ import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
 
 public class MenuScreen extends ScreenAdapter {
-    private final FirstGame game;
+    private final MyGame game;
 
-    public MenuScreen(FirstGame game) {
+    public MenuScreen(MyGame game) {
         this.game = game;
     }
 
@@ -268,7 +268,7 @@ public class MenuScreen extends ScreenAdapter {
 Содержимое `PlayScreen.java`:
 
 ```java
-package ru.learnlibgdx.firstgame;
+package ru.learnlibgdx.mygame;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -276,11 +276,11 @@ import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
 
 public class PlayScreen extends ScreenAdapter {
-    private final FirstGame game;
+    private final MyGame game;
     private float elapsed;
     private boolean paused;
 
-    public PlayScreen(FirstGame game) {
+    public PlayScreen(MyGame game) {
         this.game = game;
     }
 
@@ -341,7 +341,7 @@ public class PlayScreen extends ScreenAdapter {
 
 Эти вызовы выполняются внутри `setScreen()`. Отрисовка нового экрана начнётся при следующем вызове `Game.render()`. Сам переход не прерывает Java-метод старого экрана, поэтому после него в примерах стоит `return`. Переход размещён после рисования: текущий кадр уже очищен, а следующий нарисует выбранный экран. Порядок можно проверить в [исходном коде Game](https://github.com/libgdx/libgdx/blob/master/gdx/src/com/badlogic/gdx/Game.java).
 
-`hide()` не вызывает `dispose()`. Даже стандартный `Game.dispose()` только скрывает текущий экран. Поэтому наш `FirstGame.dispose()` сначала вызывает `super.dispose()`, а затем явно освобождает **оба** сохранённых экрана.
+`hide()` не вызывает `dispose()`. Даже стандартный `Game.dispose()` только скрывает текущий экран. Поэтому наш `MyGame.dispose()` сначала вызывает `super.dispose()`, а затем явно освобождает **оба** сохранённых экрана.
 
 Сейчас их `dispose()` унаследован от `ScreenAdapter` и ничего не делает. Когда у экранов появятся собственные ресурсы, переопределим этот метод. Не освобождайте такие ресурсы в `hide()`, если собираетесь повторно использовать тот же экран без их восстановления. Общие ресурсы, которыми владеет игра, следует освобождать в игре, а не по одному разу в каждом экране.
 
