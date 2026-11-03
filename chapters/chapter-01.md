@@ -51,47 +51,45 @@ java -jar gdx-liftoff-VERSION.jar
 
 | Параметр | Значение |
 | --- | --- |
-| Имя проекта | `first-game` |
-| Пакет Java | `ru.learnlibgdx.firstgame` |
-| Главный класс игры | `FirstGame` |
+| Имя проекта | `my-game` |
+| Пакет Java | `ru.learnlibgdx.mygame` |
+| Главный класс игры | `MyGame` |
 | Платформа | Desktop с LWJGL3 |
 | Язык | Java |
 | Версия Java для проекта | 25 |
-| Каталог назначения | `chapter-01/first-game` внутри репозитория |
+| Каталог назначения | `my-game` внутри репозитория |
 
 Оставьте обязательный модуль `core`, выберите настольную платформу LWJGL3 и простой шаблон приложения, например `ApplicationAdapter`, если он доступен в списке. Дополнительные языки, платформы и расширения для этого упражнения не нужны. Для LibGDX выберите стабильную версию, предлагаемую генератором, без суффикса `SNAPSHOT`.
 
-Создайте проект кнопкой генерации. Каталог `first-game` отделяет файлы приложения от текста главы. Далее все пути к исходникам и командам сборки приводятся относительно этого каталога.
+Создайте проект кнопкой генерации. Каталог `my-game` содержит файлы приложения. В следующих главах продолжим работу с этим же проектом. Далее все пути к исходникам и командам сборки приводятся относительно этого каталога.
 
 ### Назначение модулей
 
 В сгенерированном проекте найдите следующие элементы. Схема сокращена: генератор может добавить вспомогательные файлы.
 
 ```text
-chapter-01/
-├── README.md
-└── first-game/
-    ├── assets/
-    ├── core/
-    │   ├── build.gradle
-    │   └── src/main/java/ru/learnlibgdx/firstgame/FirstGame.java
-    ├── lwjgl3/
-    │   ├── build.gradle
-    │   └── src/main/java/ru/learnlibgdx/firstgame/lwjgl3/
-    │       └── Lwjgl3Launcher.java
-    ├── gradle/wrapper/
-    ├── build.gradle
-    ├── settings.gradle
-    ├── gradle.properties
-    ├── gradlew
-    └── gradlew.bat
+my-game/
+├── assets/
+├── core/
+│   ├── build.gradle
+│   └── src/main/java/ru/learnlibgdx/mygame/MyGame.java
+├── lwjgl3/
+│   ├── build.gradle
+│   └── src/main/java/ru/learnlibgdx/mygame/lwjgl3/
+│       └── Lwjgl3Launcher.java
+├── gradle/wrapper/
+├── build.gradle
+├── settings.gradle
+├── gradle.properties
+├── gradlew
+└── gradlew.bat
 ```
 
 Если шаблон использует каталог `src` вместо `src/main/java`, работайте с созданным генератором расположением исходников.
 
 В `core` будем писать правила игры, обработку ввода и отрисовку через API LibGDX. Здесь не должны появляться импорты классов настольного запуска из `com.badlogic.gdx.backends.lwjgl3`.
 
-Модуль `lwjgl3` связывает игру с настольной платформой. Его класс `Lwjgl3Launcher` содержит метод `main()`, создаёт конфигурацию окна и передаёт экземпляр `FirstGame` объекту `Lwjgl3Application`. Такой платформенный слой называют **бэкендом**. Устройство запуска описано в [документации стартовых классов libGDX](https://libgdx.com/wiki/app/starter-classes-and-configuration).
+Модуль `lwjgl3` связывает игру с настольной платформой. Его класс `Lwjgl3Launcher` содержит метод `main()`, создаёт конфигурацию окна и передаёт экземпляр `MyGame` объекту `Lwjgl3Application`. Такой платформенный слой называют **бэкендом**. Устройство запуска описано в [документации стартовых классов libGDX](https://libgdx.com/wiki/app/starter-classes-and-configuration).
 
 Зависимость направлена от `lwjgl3` к `core`: настольный модуль использует игру, а игровой код не требует знания о настольном запуске. Позднее другой платформенный модуль сможет использовать тот же `core`.
 
@@ -136,12 +134,12 @@ api "com.badlogicgames.gdx:gdx:$gdxVersion"
 
 ### Открытие проекта и проверка сборки
 
-Откройте в IntelliJ IDEA каталог `chapter-01/first-game` как Gradle-проект. Также можно открыть его корневой `build.gradle` и выбрать открытие в качестве проекта. Дождитесь завершения синхронизации. Для Project SDK и Gradle JVM укажите установленный JDK 25.
+Откройте в IntelliJ IDEA каталог `my-game` как Gradle-проект. Также можно открыть его корневой `build.gradle` и выбрать открытие в качестве проекта. Дождитесь завершения синхронизации. Для Project SDK и Gradle JVM укажите установленный JDK 25.
 
 В терминале перейдите в каталог приложения из корня репозитория:
 
 ```bash
-cd chapter-01/first-game
+cd my-game
 ```
 
 На Linux и macOS проверьте Wrapper и выполните сборку:
@@ -164,16 +162,16 @@ cd chapter-01/first-game
 
 ### Минимальный игровой класс
 
-Откройте `FirstGame.java` в модуле `core` и замените его содержимое следующим кодом:
+Откройте `MyGame.java` в модуле `core` и замените его содержимое следующим кодом:
 
 ```java
-package ru.learnlibgdx.firstgame;
+package ru.learnlibgdx.mygame;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 
-public class FirstGame extends ApplicationAdapter {
+public class MyGame extends ApplicationAdapter {
     @Override
     public void render() {
         Gdx.gl.glClearColor(0.10f, 0.15f, 0.25f, 1.0f);
@@ -189,15 +187,15 @@ public class FirstGame extends ApplicationAdapter {
 В сгенерированном `Lwjgl3Launcher` найдите настройки окна и задайте заголовок и размер:
 
 ```java
-configuration.setTitle("Первая игра на LibGDX");
+configuration.setTitle("My Game");
 configuration.setWindowedMode(800, 600);
 ```
 
-Используйте имя переменной конфигурации из своего файла, если оно отличается. Остальной код запуска, включая `StartupHelper`, если генератор его добавил, сохраните. Проверьте, что при создании `Lwjgl3Application` передаётся `new FirstGame()`. Настройка окна через `Lwjgl3ApplicationConfiguration` показана в [руководстве стартовых классов](https://libgdx.com/wiki/app/starter-classes-and-configuration).
+Используйте имя переменной конфигурации из своего файла, если оно отличается. Остальной код запуска, включая `StartupHelper`, если генератор его добавил, сохраните. Проверьте, что при создании `Lwjgl3Application` передаётся `new MyGame()`. Настройка окна через `Lwjgl3ApplicationConfiguration` показана в [руководстве стартовых классов](https://libgdx.com/wiki/app/starter-classes-and-configuration).
 
 ### Запуск окна
 
-Из каталога `first-game` выполните на Linux или macOS:
+Из каталога `my-game` выполните на Linux или macOS:
 
 ```bash
 ./gradlew lwjgl3:run
@@ -211,7 +209,7 @@ configuration.setWindowedMode(800, 600);
 
 В IntelliJ IDEA эту же задачу можно запустить через окно Gradle: `lwjgl3 → Tasks → application → run`. Такой способ приведён в [официальной инструкции по запуску](https://libgdx.com/wiki/start/import-and-running).
 
-Должно открыться окно размером 800 × 600 с заголовком «Первая игра на LibGDX» и тёмно-синим фоном. Пока окно открыто, задача `run` продолжает выполняться — это нормально. Закройте окно, чтобы приложение завершилось.
+Должно открыться окно размером 800 × 600 с заголовком «My Game» и тёмно-синим фоном. Пока окно открыто, задача `run` продолжает выполняться — это нормально. Закройте окно, чтобы приложение завершилось.
 
 Если запуск не удался, начните с проверки сообщения об ошибке:
 

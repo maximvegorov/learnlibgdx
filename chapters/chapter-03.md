@@ -11,7 +11,7 @@
 
 Во второй главе мы разделили приложение на меню и игровой экран. Теперь нарисуем на игровом экране изображения и геометрические фигуры и научимся сохранять их пропорции при изменении размеров окна.
 
-Продолжим работу с проектом `chapter-01/first-game`. В конце главы заменим `PlayScreen.java` в пакете `ru.learnlibgdx.firstgame`. Классы `FirstGame` и `MenuScreen` возьмём из основного примера второй главы. Enter по-прежнему открывает игровой экран, пробел переключает паузу, Escape возвращает в меню.
+Продолжим работу с проектом `my-game`. В конце главы заменим `PlayScreen.java` в пакете `ru.learnlibgdx.mygame`. Классы `MyGame` и `MenuScreen` возьмём из основного примера второй главы. Enter по-прежнему открывает игровой экран, пробел переключает паузу, Escape возвращает в меню.
 
 ## Текстуры и SpriteBatch
 
@@ -257,10 +257,10 @@ shapes.end();
 
 ## Полный игровой экран
 
-Замените содержимое `core/src/main/java/ru/learnlibgdx/firstgame/PlayScreen.java` следующим кодом. Если генератор использовал каталог `src`, сохраните файл в соответствующем пакете этого каталога.
+Замените содержимое `core/src/main/java/ru/learnlibgdx/mygame/PlayScreen.java` следующим кодом. Если генератор использовал каталог `src`, сохраните файл в соответствующем пакете этого каталога.
 
 ```java
-package ru.learnlibgdx.firstgame;
+package ru.learnlibgdx.mygame;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -278,7 +278,7 @@ public class PlayScreen extends ScreenAdapter {
     private static final float WORLD_HEIGHT = 450f;
     private static final float MARKER_SIZE = 64f;
 
-    private final FirstGame game;
+    private final MyGame game;
     private final OrthographicCamera camera;
     private final FitViewport viewport;
     private final SpriteBatch batch;
@@ -289,7 +289,7 @@ public class PlayScreen extends ScreenAdapter {
     private float elapsed;
     private boolean paused;
 
-    public PlayScreen(FirstGame game) {
+    public PlayScreen(MyGame game) {
         this.game = game;
         camera = new OrthographicCamera();
         viewport = new FitViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
@@ -428,13 +428,13 @@ public class PlayScreen extends ScreenAdapter {
 
 `ScreenUtils.clear()` очищает окно чёрным цветом. При обычном состоянии OpenGL без включённого scissor-теста очистка затрагивает весь цветовой буфер, включая поля `FitViewport`. Отрисовка фона через `batch`, напротив, занимает только игровую область. Поэтому поля будут чёрными, а игровая область — синей. Реализацию очистки можно посмотреть в [ScreenUtils](https://github.com/libgdx/libgdx/blob/master/gdx/src/com/badlogic/gdx/utils/ScreenUtils.java).
 
-Конструктор `PlayScreen` здесь вызывается внутри `FirstGame.create()`, когда графический контекст уже доступен. При переходе `Game.setScreen()` вызывает `show()`, а затем `resize()` с текущими размерами, поэтому viewport настроен до первого кадра экрана. При повторном входе из меню он также получает актуальные размеры.
+Конструктор `PlayScreen` здесь вызывается внутри `MyGame.create()`, когда графический контекст уже доступен. При переходе `Game.setScreen()` вызывает `show()`, а затем `resize()` с текущими размерами, поэтому viewport настроен до первого кадра экрана. При повторном входе из меню он также получает актуальные размеры.
 
-Ресурсы сохраняются при `hide()`: экран из второй главы используется повторно. При завершении `FirstGame.dispose()` вызывает `playScreen.dispose()`, и текстуры, `SpriteBatch` и `ShapeRenderer` освобождаются. У камеры и viewport в этом примере нет ресурсов, требующих `dispose()`.
+Ресурсы сохраняются при `hide()`: экран из второй главы используется повторно. При завершении `MyGame.dispose()` вызывает `playScreen.dispose()`, и текстуры, `SpriteBatch` и `ShapeRenderer` освобождаются. У камеры и viewport в этом примере нет ресурсов, требующих `dispose()`.
 
 ### Проверка и самостоятельная работа
 
-Из каталога `chapter-01/first-game` выполните `./gradlew build`, затем `./gradlew lwjgl3:run`. В Windows используйте `.\gradlew.bat build` и `.\gradlew.bat lwjgl3:run`.
+Из каталога `my-game` выполните `./gradlew build`, затем `./gradlew lwjgl3:run`. В Windows используйте `.\gradlew.bat build` и `.\gradlew.bat lwjgl3:run`.
 
 1. Нажмите Enter. Должны появиться синий фон, четыре квадрата по углам, движущийся квадрат с белой рамкой, цветные фигуры и линии.
 2. Изменяйте ширину и высоту окна. Все угловые квадраты должны оставаться видимыми, круг — круглым, а рамка — совпадать с движущимся квадратом. При несовпадении пропорций появятся чёрные поля.

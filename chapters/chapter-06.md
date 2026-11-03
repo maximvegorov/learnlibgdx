@@ -10,7 +10,7 @@
 
 В третьей главе камера показывала всю небольшую сцену. Теперь сделаем уровень больше окна и позволим игроку перемещаться по нему. Камера будет выбирать, какую часть уровня показать, насколько приблизить изображение и сколько пространства оставить перед персонажем.
 
-Продолжим проект `chapter-01/first-game`. Заменим только `PlayScreen.java` в пакете `ru.learnlibgdx.firstgame` модуля `core`. `FirstGame` и загрузку ресурсов оставим из главы 4, меню — из главы 5. По-прежнему нужны области `marker` и `white` в загруженном атласе. Новых зависимостей и ресурсов эта глава не требует.
+Продолжим проект `my-game`. Заменим только `PlayScreen.java` в пакете `ru.learnlibgdx.mygame` модуля `core`. `MyGame` и загрузку ресурсов оставим из главы 4, меню — из главы 5. По-прежнему нужны области `marker` и `white` в загруженном атласе. Новых зависимостей и ресурсов эта глава не требует.
 
 ## Координаты игрового мира и экрана
 
@@ -163,7 +163,7 @@ float halfHeight = camera.viewportHeight * camera.zoom / 2f;
 Замените `PlayScreen.java`:
 
 ```java
-package ru.learnlibgdx.firstgame;
+package ru.learnlibgdx.mygame;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -191,7 +191,7 @@ public class PlayScreen extends ScreenAdapter {
 
     private enum CameraStyle { LOCKED, SMOOTH, LOOK_AHEAD, DEAD_ZONE }
 
-    private final FirstGame game;
+    private final MyGame game;
     private final OrthographicCamera camera = new OrthographicCamera();
     private final FitViewport viewport =
             new FitViewport(VIEW_WIDTH, VIEW_HEIGHT, camera);
@@ -206,7 +206,7 @@ public class PlayScreen extends ScreenAdapter {
     private float facingX = 1f;
     private boolean paused;
 
-    public PlayScreen(FirstGame game, TextureAtlas atlas) {
+    public PlayScreen(MyGame game, TextureAtlas atlas) {
         this.game = game;
         markerRegion = requireRegion(atlas, "marker");
         whiteRegion = requireRegion(atlas, "white");
@@ -491,7 +491,7 @@ targetY = player.y;
 
 ### Самостоятельная проверка
 
-Запустите проект командой `./gradlew lwjgl3:run` из каталога `first-game` или `.\gradlew.bat lwjgl3:run` в Windows. Нажмите Enter в меню.
+Запустите проект командой `./gradlew lwjgl3:run` из каталога `my-game` или `.\gradlew.bat lwjgl3:run` в Windows. Нажмите Enter в меню.
 
 1. В режиме 1 пройдите к каждой границе уровня. Камера должна остановиться раньше игрока, а игрок — остаться целиком внутри карты.
 2. В центре уровня нажмите 2, пробегите по диагонали и отпустите управление. Камера должна плавно догнать остановившегося игрока.

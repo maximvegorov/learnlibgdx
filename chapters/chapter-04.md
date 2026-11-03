@@ -9,7 +9,7 @@
 
 В третьей главе игровой экран сам создавал текстуры и освобождал их. Когда одни изображения нужны нескольким экранам, такой подход усложняет управление ресурсами: приходится решать, кто загружает картинку и кто имеет право её уничтожить. Теперь перенесём загрузку в общий `AssetManager`, объединим изображения в атлас и добавим отдельный экран ожидания.
 
-Продолжим работу с проектом `chapter-01/first-game`. Подготовим файлы атласа, заменим `FirstGame.java` и `PlayScreen.java`, добавим `LoadingScreen.java`. Все три класса относятся к пакету `ru.learnlibgdx.firstgame` в модуле `core`. `MenuScreen` из второй главы и настольный запуск остаются прежними. Порядок переходов будет таким:
+Продолжим работу с проектом `my-game`. Подготовим файлы атласа, заменим `MyGame.java` и `PlayScreen.java`, добавим `LoadingScreen.java`. Все три класса относятся к пакету `ru.learnlibgdx.mygame` в модуле `core`. `MenuScreen` из второй главы и настольный запуск остаются прежними. Порядок переходов будет таким:
 
 ```text
 загрузка → меню ⇄ игровой экран
@@ -29,7 +29,7 @@ Enter открывает игру из меню, пробел переключа
 
 ### Подготовка и упаковка
 
-Создайте в каталоге `first-game` папку `art/atlas`. Подготовьте в любом графическом редакторе два PNG:
+Создайте в каталоге `my-game` папку `art/atlas`. Подготовьте в любом графическом редакторе два PNG:
 
 - `marker.png` — квадрат 64 × 64 пикселя, например жёлтый с голубой серединой, как в третьей главе;
 - `white.png` — полностью белое непрозрачное изображение 1 × 1 пиксель для заливки.
@@ -37,7 +37,7 @@ Enter открывает игру из меню, пробел переключа
 Если выполняли упражнение с собственным PNG в третьей главе, скопируйте его в `art/atlas/marker.png`. Исходники будем хранить вне `assets`, а в ресурсы игры поместим результат упаковки:
 
 ```text
-first-game/
+my-game/
 ├── art/atlas/
 │   ├── marker.png
 │   ├── white.png
@@ -85,7 +85,7 @@ tasks.register('packAssets', JavaExec) {
 
 `gdxVersion` — то же свойство версии, которое используется в зависимостях проекта из первой главы. Отдельная конфигурация `texturePacker` нужна только задаче упаковки и не добавляет инструмент в зависимости самой игры. `JavaExec` запускает указанный Java-класс с заданными аргументами и рабочим каталогом; см. [документацию Gradle](https://docs.gradle.org/current/dsl/org.gradle.api.tasks.JavaExec.html). Три аргумента упаковщика — входной каталог, выходной каталог и имя атласа без расширения; их обработку можно проверить в [исходном коде TexturePacker](https://github.com/libgdx/libgdx/blob/master/extensions/gdx-tools/src/com/badlogic/gdx/tools/texturepacker/TexturePacker.java).
 
-Из каталога `first-game` выполните:
+Из каталога `my-game` выполните:
 
 ```bash
 ./gradlew lwjgl3:packAssets
@@ -165,16 +165,16 @@ if (assets.update()) {
 
 ### Главный класс игры
 
-Замените `FirstGame.java` следующим кодом:
+Замените `MyGame.java` следующим кодом:
 
 ```java
-package ru.learnlibgdx.firstgame;
+package ru.learnlibgdx.mygame;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 
-public class FirstGame extends Game {
+public class MyGame extends Game {
     public static final String GAME_ATLAS = "atlases/game.atlas";
 
     private AssetManager assets;
@@ -229,7 +229,7 @@ public class FirstGame extends Game {
 Создайте `LoadingScreen.java`:
 
 ```java
-package ru.learnlibgdx.firstgame;
+package ru.learnlibgdx.mygame;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
@@ -240,14 +240,14 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 public class LoadingScreen extends ScreenAdapter {
-    private final FirstGame game;
+    private final MyGame game;
     private final AssetManager assets;
     private final OrthographicCamera camera;
     private final FitViewport viewport;
     private final ShapeRenderer shapes;
     private boolean failed;
 
-    public LoadingScreen(FirstGame game, AssetManager assets) {
+    public LoadingScreen(MyGame game, AssetManager assets) {
         this.game = game;
         this.assets = assets;
         camera = new OrthographicCamera();
@@ -307,14 +307,14 @@ public class LoadingScreen extends ScreenAdapter {
 
 `getProgress()` отражает обработку запросов и зависимостей, а не прочитанные байты или оставшееся время. Небольшой атлас загрузится быстро, и полоса может быть видна всего несколько кадров. Это нормально; искусственная задержка не требуется.
 
-Переключение выполняется после `shapes.end()`. Вызов `setScreen()` сам вызовет `hide()` старого экрана, затем `show()` и `resize()` нового. Он не вызывает `dispose()` старого экрана — поэтому освобождение явно написано в `FirstGame`. Этот порядок определён в [реализации Game](https://github.com/libgdx/libgdx/blob/master/gdx/src/com/badlogic/gdx/Game.java).
+Переключение выполняется после `shapes.end()`. Вызов `setScreen()` сам вызовет `hide()` старого экрана, затем `show()` и `resize()` нового. Он не вызывает `dispose()` старого экрана — поэтому освобождение явно написано в `MyGame`. Этот порядок определён в [реализации Game](https://github.com/libgdx/libgdx/blob/master/gdx/src/com/badlogic/gdx/Game.java).
 
 ### Игровой экран с общим атласом
 
 Замените `PlayScreen.java` следующим вариантом. Камера, движение и управление сохраняются из третьей главы, но вместо самостоятельного создания текстур экран получает две области атласа:
 
 ```java
-package ru.learnlibgdx.firstgame;
+package ru.learnlibgdx.mygame;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -331,7 +331,7 @@ public class PlayScreen extends ScreenAdapter {
     private static final float WORLD_HEIGHT = 450f;
     private static final float MARKER_SIZE = 64f;
 
-    private final FirstGame game;
+    private final MyGame game;
     private final OrthographicCamera camera;
     private final FitViewport viewport;
     private final SpriteBatch batch;
@@ -341,7 +341,7 @@ public class PlayScreen extends ScreenAdapter {
     private float elapsed;
     private boolean paused;
 
-    public PlayScreen(FirstGame game, TextureAtlas atlas) {
+    public PlayScreen(MyGame game, TextureAtlas atlas) {
         this.game = game;
         markerRegion = requireRegion(atlas, "marker");
         whiteRegion = requireRegion(atlas, "white");
@@ -438,7 +438,7 @@ public class PlayScreen extends ScreenAdapter {
 
 | Объект | Владелец | Когда освобождается |
 | --- | --- | --- |
-| `AssetManager` | `FirstGame` | При завершении приложения |
+| `AssetManager` | `MyGame` | При завершении приложения |
 | Атлас и загруженные через менеджер страницы | `AssetManager` | При освобождении менеджера |
 | `ShapeRenderer` | `LoadingScreen` | После перехода в меню или при закрытии окна во время загрузки |
 | `SpriteBatch` | `PlayScreen` | При освобождении игрового экрана |
@@ -453,7 +453,7 @@ public class PlayScreen extends ScreenAdapter {
 Когда уровень окончательно закрыт и его изображения больше никому не нужны, ресурс можно выгрузить по пути:
 
 ```java
-assets.unload(FirstGame.GAME_ATLAS);
+assets.unload(MyGame.GAME_ATLAS);
 ```
 
 Это пример API, **его не нужно добавлять в `hide()` нашего игрового экрана**. Мы возвращаемся к тому же `PlayScreen`, и его поля должны продолжать ссылаться на живые текстуры. Для выгрузки уровня сначала прекратите его отрисовку и удалите ссылки на его ресурсы; при следующем входе заново загрузите атлас и создайте области.
@@ -462,11 +462,11 @@ assets.unload(FirstGame.GAME_ATLAS);
 
 `clear()` освобождает содержимое менеджера и очищает очередь, оставляя сам менеджер пригодным к дальнейшему использованию. `dispose()` дополнительно завершает его работу. При выходе из игры достаточно `assets.dispose()`; предварительный `clear()` не нужен. Эти операции могут ожидать завершения уже выполняющейся работы, поэтому не следует использовать их как способ мгновенно отменить загрузку в каждом кадре.
 
-В `FirstGame.dispose()` сначала снимаем текущий экран через `setScreen(null)`, затем освобождаем экраны и последним — менеджер. Не рассчитываем на `Game.dispose()` как на автоматическое освобождение всех экранов: его стандартная реализация только скрывает текущий экран.
+В `MyGame.dispose()` сначала снимаем текущий экран через `setScreen(null)`, затем освобождаем экраны и последним — менеджер. Не рассчитываем на `Game.dispose()` как на автоматическое освобождение всех экранов: его стандартная реализация только скрывает текущий экран.
 
 ### Самостоятельная проверка
 
-После упаковки запустите `./gradlew lwjgl3:run` из каталога `first-game` или `.\gradlew.bat lwjgl3:run` в Windows.
+После упаковки запустите `./gradlew lwjgl3:run` из каталога `my-game` или `.\gradlew.bat lwjgl3:run` в Windows.
 
 1. Дождитесь синего меню и нажмите Enter. Должны появиться четыре угловых маркера и один движущийся, как в третьей главе.
 2. Проверьте пробел, Escape, повторный вход и изменение размера окна. Возврат из меню не должен запускать загрузку заново.
