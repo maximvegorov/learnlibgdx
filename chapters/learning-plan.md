@@ -122,12 +122,7 @@
 
 Отдельно написать игровую логику на чистой Java, без зависимости от libGDX.
 
-Документация: [Scene2D](https://libgdx.com/wiki/graphics/2d/scene2d/scene2d?utm_source=chatgpt.com).&#x20;
-
-[image](https://www.google.com/s2/favicons?domain=https://libgdx.com\&sz=32)
-
-libGDX
-
+Документация: [Scene2D](https://libgdx.com/wiki/graphics/2d/scene2d/scene2d?utm_source=chatgpt.com).
 
 
 ## Неделя 6. Работа с дискретной симуляцией → Snake
@@ -301,12 +296,7 @@ libGDX
 
 Практика: сделать физическую песочницу с падающими ящиками, препятствиями и движущимися объектами.
 
-Документация: [Box2D](https://libgdx.com/wiki/extensions/physics/box2d?utm_source=chatgpt.com).&#x20;
-
-[image](https://www.google.com/s2/favicons?domain=https://libgdx.com\&sz=32)
-
-libGDX
-
+Документация: [Box2D](https://libgdx.com/wiki/extensions/physics/box2d?utm_source=chatgpt.com).
 
 
 ## Неделя 16. Продвинутая 2D-графика
@@ -426,13 +416,7 @@ libGDX
 
 Практика: создать сцену с несколькими кубами, поверхностью земли, освещением и управляемой камерой.
 
-Документация: [ModelBatch](https://libgdx.com/wiki/graphics/3d/modelbatch?utm_source=chatgpt.com).&#x20;
-
-[image](https://www.google.com/s2/favicons?domain=https://libgdx.com\&sz=32)
-
-libGDX
-
-
+Документация: [ModelBatch](https://libgdx.com/wiki/graphics/3d/modelbatch?utm_source=chatgpt.com).
 
 ## Неделя 29. 3D-математика
 
